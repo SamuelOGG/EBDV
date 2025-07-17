@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Asistencia</title>
+  <link rel="stylesheet" href="css/asistencia.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/rotacion-grupo.css">
+</head>
+<body oncontextmenu="return false"> <!-- Bloquea menú derecho -->
+
+  <!-- Capa oscura -->
+  <div class="overlay"></div>
+
+  <!-- Área de scroll de ciudad -->
+  <div class="ciudad-scroll">
+    <div class="ciudad-container" id="ciudad">
+      <!-- Imagen de la ciudad (fondo) como elemento real -->
+      <img src="../imagenes/Asistencia_Lona.png" class="ciudad-imagen" draggable="false">
+    </div>
+  </div>
+
+  <!-- Menú lateral -->
+  <div id="menu-lateral" class="menu-lateral oculto">
+    <h2>Menú de Personajes</h2>
+    <div class="grupos-disponibles">
+      <!-- Aquí irán los íconos arrastrables después -->
+    </div>
+  </div>
+
+  <!-- HUD inferior -->
+  <div class="hud">
+    <button onclick="toggleMenu()">👤</button>
+    <button onclick="volver()">🏠</button>
+    <button id="borrar-btn" title="Borrar grupo o niño(a) del mapa">🗑️</button>
+    <button id="rotar-btn" title="Rotar grupo seleccionado">🔄</button>
+    <button id="toggle-contador-btn" title="Mostrar/ocultar resumen">👁️</button>
+    <button id="play-animacion-btn" title="Mostrar ganador">▶️</button>
+    <button id="lock-btn" title="Bloquear Nombres">🔓</button>
+  </div>
+
+  <!-- Contador global de niños y niñas -->
+  <div id="contador-global-container">
+    <div id="contador-global"></div>
+  </div>
+  <!-- Pantalla de Ganador -->
+  <div id="pantalla-ganador" class="oculto">
+    <div class="contenido-ganador">
+      <h1>¡El ganador es!</h1>
+      <div id="nombre-edificio-ganador"></div>
+      <div class="contador-ganador">
+        <span id="contador-animado">0</span>
+      </div>
+      <div id="confeti-contenedor"></div>
+      <div class="botones-ganador">
+        <button id="cerrar-ganador-btn">Cerrar</button>
+        <button id="salir-menu-btn">Salir al Menú</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sonidos -->
+  <audio id="sonido-click" src="../sonidos/click.mp3" preload="auto"></audio>
+  <audio id="sonido-ganador" src="../sonidos/ganador.mp3" preload="auto"></audio>
+
+  <script src="js/asistencia.js" defer></script>
+</body>
+</html>
