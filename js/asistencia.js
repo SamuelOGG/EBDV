@@ -1,3 +1,66 @@
+// Manejador de música de fondo
+function setupBackgroundMusic() {
+  const backgroundMusic = document.getElementById('musica-fondo');
+  if (!backgroundMusic) return;
+
+  // Configurar el volumen a un nivel razonable
+  backgroundMusic.volume = 0.5;
+  
+  // Intentar cargar el tiempo guardado
+  const savedTime = localStorage.getItem('musica-fondo-time');
+  if (savedTime && !isNaN(savedTime)) {
+    backgroundMusic.currentTime = parseFloat(savedTime);
+  }
+
+  // Función para iniciar la música
+  const iniciarMusica = () => {
+    if (backgroundMusic.paused) {
+      // Usar una promesa para manejar mejor el autoplay
+      const playPromise = backgroundMusic.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Reproducción automática bloqueada. Esperando interacción del usuario...");
+        });
+      }
+    }
+  };
+
+  // Intentar iniciar la música de inmediato
+  iniciarMusica();
+
+  // Configurar eventos para iniciar con interacción del usuario
+  const startEvents = ['click', 'touchstart', 'keydown', 'mousedown'];
+  const handleFirstInteraction = () => {
+    iniciarMusica();
+    // Remover todos los listeners después de la primera interacción exitosa
+    startEvents.forEach(event => {
+      document.removeEventListener(event, handleFirstInteraction);
+    });
+  };
+
+  // Agregar listeners para la primera interacción
+  startEvents.forEach(event => {
+    document.addEventListener(event, handleFirstInteraction, { once: true });
+  });
+
+  // Guardar el tiempo de reproducción periódicamente
+  setInterval(() => {
+    if (!backgroundMusic.paused) {
+      localStorage.setItem('musica-fondo-time', backgroundMusic.currentTime.toFixed(2));
+    }
+  }, 3000);
+
+  // Manejar el evento de terminación de la canción para reiniciarla
+  backgroundMusic.addEventListener('ended', () => {
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play();
+  });
+}
+
+// Iniciar la configuración de la música cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', setupBackgroundMusic);
+
 function volver() {
     window.location.href = "index.html";
   }
@@ -8,6 +71,7 @@ function volver() {
   }
   
   // === Variables globales ===
+  const sumandoSound = new Audio('../sonidos/sumando.mp3');
   let isPanning = false;
   let startX, startY;
   let offsetX = 0;
@@ -359,6 +423,8 @@ function volver() {
         const ninos = grupoDiv2.querySelectorAll('img[src$="Niño.png"]').length;
         window._contadoresEdificio[idEdificio].ninas += ninas;
         window._contadoresEdificio[idEdificio].ninos += ninos;
+        sumandoSound.currentTime = 0;
+        sumandoSound.play();
         actualizarContadores();
       }, 720);
       window._grupoDragInfo = null;
@@ -558,6 +624,14 @@ function volver() {
   });
   
   function lanzarConfeti() {
+    // Reproducir sonido de confeti
+    const confetiSound = document.getElementById('sonido-confeti');
+    if (confetiSound) {
+      confetiSound.currentTime = 0; // Reiniciar el sonido si ya está reproduciéndose
+      confetiSound.play().catch(e => console.log("No se pudo reproducir el sonido de confeti:", e));
+    }
+    
+    // Crear confeti
     const contenedor = document.getElementById('confeti-contenedor');
     for (let i = 0; i < 100; i++) {
       const confeti = document.createElement('div');
