@@ -1,15 +1,109 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Concursos</title>
-  <link rel="stylesheet" href="css/estilo.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pista de Carreras Retro</title>
+    <link rel="stylesheet" href="css/ofrenda.css">
 </head>
 <body>
-  <div class="menu-container">
-    <h1>OFRENDA</h1>
-    <p>Esta sección contendrá la información de los concursos del evento.</p>
-  </div>
-  <script src="js/menu.js"></script>
+    <div class="timer-container">
+        <span id="timer">00:00</span>
+    </div>
+
+    <div class="ui-container">
+        <!-- Contadores de Puntuación -->
+        <div id="score-niño-container" class="score-container score-left">
+
+            <span id="score-niño">0</span>
+        </div>
+        <div id="score-niña-container" class="score-container score-right">
+
+            <span id="score-niña">0</span>
+        </div>
+
+        <!-- Controles -->
+        <div class="controls">
+            <button id="start-button">&#9654;</button>
+            <button id="home-btn">&#127968;</button>
+            <button id="settings-button">&#9881;</button>
+        </div>
+    </div>
+
+    <div class="scene">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+        <div class="road-container">
+            <div class="road"></div>
+            <div class="curb left"></div>
+            <div class="curb right"></div>
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin1">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin2">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin3">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin4">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin5">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin6">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin7">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin8">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin9">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin10">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin11">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin12">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin13">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin14">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin15">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin16">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin17">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin18">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin19">
+            <img src="imagenes/moneda.png" alt="Moneda" class="coin" id="coin20">
+        </div>
+        <img src="imagenes/CocheNiño.png" alt="Coche 1" id="coche1" class="coche">
+        <img src="imagenes/CocheNiña.png" alt="Coche 2" id="coche2" class="coche">
+    </div>
+
+    <script src="js/ofrenda.js"></script>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Configuración</h2>
+            <div class="input-group">
+                <label for="puntos-niño">Puntos por moneda (Niño):</label>
+                <input type="number" id="puntos-niño" min="1">
+            </div>
+            <div class="input-group">
+                <label for="puntos-niña">Puntos por moneda (Niña):</label>
+                <input type="number" id="puntos-niña" min="1">
+            </div>
+            <button id="save-settings">Guardar</button>
+        </div>
+    </div>
+    <!-- Winner Modal -->
+    <div id="winner-modal" class="modal-overlay" style="display: none;">
+        <div class="podium-container">
+            <div class="confetti-container"></div>
+            <h2 id="podium-title"></h2>
+            <div class="podium">
+                <div id="podium-second" class="podium-place">
+                    <img id="podium-second-img" src="" class="podium-img">
+                    <div class="podium-rank">2do</div>
+                    <div id="podium-second-name" class="podium-name"></div>
+                    <div id="podium-second-score" class="podium-score"></div>
+                </div>
+                <div id="podium-first" class="podium-place">
+                    <img id="podium-first-img" src="" class="podium-img">
+                    <div class="podium-rank">1ro</div>
+                    <div id="podium-first-name" class="podium-name"></div>
+                    <div id="podium-first-score" class="podium-score"></div>
+                </div>
+            </div>
+            <div class="winner-buttons-new">
+                <button id="restart-game">Reiniciar</button>
+                <button id="exit-to-menu-btn">Salir al Menú</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

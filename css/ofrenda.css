@@ -1,0 +1,396 @@
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(#4ab4e6 50%, #2a8d2a 50%);
+}
+
+.scene {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    perspective: 300px; /* Adjusted perspective */
+}
+
+.road-container {
+  position: absolute;
+  width: 800px;
+  height: 130vh; /* Más alto para cubrir todo */
+  left: 50%;
+  bottom: 0;
+  transform-origin: bottom center;
+  transform: translateX(-50%) rotateX(67deg); /* Ajuste fino al ángulo */
+  transform-style: preserve-3d;
+  z-index: 1;
+}
+
+.road {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #6b6b6b;
+}
+
+.road::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 100%;
+    background: repeating-linear-gradient(to bottom, white 0, white 40px, transparent 40px, transparent 80px);
+    animation: move-road 0.5s linear infinite;
+}
+
+.curb {
+    position: absolute;
+    top: 0;
+    width: 40px;
+    height: 100%;
+    background: repeating-linear-gradient(to bottom, #e53935 0, #e53935 20px, white 20px, white 40px);
+    animation: move-road 0.5s linear infinite;
+}
+
+.curb.left { left: -50px; }
+.curb.right { right: -50px; }
+
+@keyframes move-road {
+    from { background-position-y: 0; }
+    to { background-position-y: -80px; }
+}
+
+/* Clouds */
+.cloud {
+    position: absolute;
+    background: white;
+    border-radius: 2px;
+    box-shadow: 10px 0 0 0 white, 20px 0 0 0 white, 5px 5px 0 0 white, 15px 5px 0 0 white;
+}
+.cloud1 { top: 10%; left: 15%; width: 30px; height: 10px; }
+.cloud2 { top: 20%; left: 70%; width: 40px; height: 10px; }
+.cloud3 { top: 5%; left: 45%; width: 25px; height: 10px; }
+
+/* Cars */
+.coche {
+    width: 200px;
+    position: absolute;
+    bottom: 20px;
+    z-index: 3;
+    transition: left 0.1s linear;
+}
+
+#coche1 { left: 35%; }
+#coche2 { left: 55%; }
+
+/* Coins */
+.coin {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    z-index: 2; /* Between road and cars */
+    transform: scale(0.1); /* Start small */
+    display: none; /* Initially hidden */
+}
+
+/* UI Container */
+.ui-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none; /* Clicks go through the container */
+}
+
+/* Score Containers */
+.score-container {
+    display: none; /* Oculto por petición del usuario */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 18px;
+    text-shadow: 0 0 5px #00ffff;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: all;
+}
+
+.score-left {
+    left: 30px;
+}
+
+.score-right {
+    right: 30px;
+}
+
+.score-container span:first-child {
+    font-size: 14px;
+    color: #00ffff;
+}
+
+/* Controls Container */
+.controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column; /* Apila los botones verticalmente */
+    gap: 15px; /* Espacio entre botones */
+    z-index: 100;
+}
+
+/* Individual Buttons */
+.controls button {
+    background: rgba(0, 0, 0, 0.4);
+    color: #00ffff;
+    border: 1px solid #00ffff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    cursor: pointer;
+    pointer-events: all; /* Buttons are clickable */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-shadow: 0 0 5px #00ffff;
+    box-shadow: 0 0 5px #00ffff, inset 0 0 5px #00ffff;
+    transition: all 0.2s ease-in-out;
+}
+
+.ui-container button:hover {
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 10px #00ffff, inset 0 0 10px #00ffff;
+    transform: scale(1.1);
+}
+
+/* Timer Container */
+.timer-container {
+    display: none; /* Oculto por petición del usuario */
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    text-shadow: 0 0 5px #00ffff;
+    z-index: 10;
+}
+
+/* Settings Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+}
+
+.modal-content {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 30px;
+    border-radius: 10px;
+    border: 1px solid #00ffff;
+    box-shadow: 0 0 15px #00ffff;
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    text-align: center;
+}
+
+.modal-content h2 {
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff;
+    margin-top: 0;
+}
+
+.input-group {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 16px;
+}
+
+#save-settings {
+    background: #00ffff;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-family: 'Press Start 2P', cursive;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#save-settings:hover {
+    box-shadow: 0 0 10px #fff;
+}
+
+/* Podium Winner Modal */
+.podium-container {
+    background: rgba(10, 10, 20, 0.95); /* Fondo un poco más opaco */
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden; /* Para contener el confeti */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box; /* Asegura que el padding no desborde */
+}
+
+#podium-title {
+    color: #ffff00;
+    text-shadow: 0 0 10px #ffff00;
+    font-size: 36px; /* Aumentado */
+    margin-bottom: 30px; /* Aumentado */
+    position: relative;
+    z-index: 2;
+}
+
+.podium {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px; /* Aumentado */
+    margin-bottom: 30px; /* Aumentado */
+    position: relative;
+    z-index: 2;
+    width: 80%; /* Ancho base para el podio */
+    max-width: 1000px; /* Límite para pantallas muy grandes */
+}
+
+.podium-place {
+    background: rgba(30, 30, 50, 0.8);
+    border: 3px solid; /* Borde más grueso */
+    border-radius: 15px 15px 0 0; /* Radio aumentado */
+    padding: 20px;
+    width: 50%; /* Ocupa la mitad del contenedor .podium */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#podium-first {
+    height: 320px; /* Aumentado */
+}
+
+#podium-second {
+    height: 240px; /* Aumentado */
+}
+
+.podium-img {
+    max-height: 55%; /* Ajustado para el nuevo tamaño */
+    margin-bottom: 15px;
+}
+
+.podium-rank {
+    font-size: 32px; /* Aumentado */
+    font-weight: bold;
+}
+
+#podium-first .podium-rank {
+    color: #ff00ff;
+}
+
+#podium-second .podium-rank {
+    color: #00ffff;
+}
+
+.podium-name {
+    font-size: 24px; /* Aumentado */
+    margin: 10px 0;
+}
+
+.podium-score {
+    font-size: 20px; /* Aumentado */
+    color: #f0f0f0;
+}
+
+/* Estilos de color dinámicos para el podio */
+.podium-style-niñas {
+    border-color: #ff00ff;
+    box-shadow: 0 0 25px #ff00ff;
+}
+
+.podium-style-niños {
+    border-color: #00ffff;
+    box-shadow: 0 0 20px #00ffff;
+}
+
+/* Confetti Styles */
+.confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: var(--color);
+    opacity: 0.9;
+    animation: fall 4s linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh) rotate(720deg);
+    }
+}
+
+.winner-buttons-new {
+    margin-top: 20px;
+}
+
+.winner-buttons-new button {
+    background: rgba(0, 0, 0, 0.5);
+    border: 3px solid #00ffff;
+    color: #00ffff;
+    padding: 15px 30px; /* Aumentado */
+    font-family: 'Press Start 2P', cursive;
+    font-size: 20px; /* Aumentado */
+    cursor: pointer;
+    text-shadow: 0 0 8px #00ffff;
+    transition: all 0.3s ease;
+    margin: 0 15px;
+    border-radius: 10px;
+}
+
+.winner-buttons-new button:hover {
+    background: #00ffff;
+    color: #1a1a1a;
+}
+

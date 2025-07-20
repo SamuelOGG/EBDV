@@ -1,0 +1,304 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Elementos del DOM ---
+    const startButton = document.getElementById('start-button');
+    const settingsButton = document.getElementById('settings-button');
+    const homeBtn = document.getElementById('home-btn');
+    const coches = [document.getElementById('coche1'), document.getElementById('coche2')];
+    const coins = Array.from(document.querySelectorAll('.coin'));
+    const settingsModal = document.getElementById('settings-modal');
+    const saveSettingsButton = document.getElementById('save-settings');
+    const puntosNiñoInput = document.getElementById('puntos-niño');
+    const puntosNiñaInput = document.getElementById('puntos-niña');
+    const scoreNiñoElement = document.getElementById('score-niño');
+    const scoreNiñaElement = document.getElementById('score-niña');
+    const timerElement = document.getElementById('timer');
+    const winnerModal = document.getElementById('winner-modal');
+    const podiumTitle = document.getElementById('podium-title');
+    const podiumFirstName = document.getElementById('podium-first-name');
+    const podiumFirstScore = document.getElementById('podium-first-score');
+    const podiumFirstImg = document.getElementById('podium-first-img');
+    const podiumSecondName = document.getElementById('podium-second-name');
+    const podiumSecondScore = document.getElementById('podium-second-score');
+    const podiumSecondImg = document.getElementById('podium-second-img');
+    const restartGameButton = document.getElementById('restart-game');
+    const exitToMenuBtn = document.getElementById('exit-to-menu-btn');
+    const confettiContainer = document.querySelector('.confetti-container');
+
+    // --- Configuración del Juego ---
+    let gameRunning = false;
+    let gameOver = false;
+    let scores = { niño: 0, niña: 0 };
+    let pointsPerCoin = { niño: 10, niña: 10 };
+    let posCoches = [35, 55];
+    const limitesCoches = [{ min: 33, max: 37 }, { min: 53, max: 57 }];
+    const laneCenters = [20, 75];
+    const coinSpeed = 4;
+    const spawnInterval = 20;
+    let gameTimer;
+    let timeLeft;
+
+    // --- Estado de las Monedas ---
+    const coinStates = coins.map((coin, index) => ({
+        element: coin,
+        active: false,
+        top: 0,
+        scale: 0.1,
+        lane: laneCenters[index % laneCenters.length]
+    }));
+
+    // --- Cargar, Guardar y Resetear ---
+    function loadSettings() {
+        const savedPoints = localStorage.getItem('pointsPerCoin');
+        if (savedPoints) {
+            pointsPerCoin = JSON.parse(savedPoints);
+        }
+        puntosNiñoInput.value = pointsPerCoin.niño;
+        puntosNiñaInput.value = pointsPerCoin.niña;
+        setupTimer();
+    }
+
+    function saveSettings() {
+        pointsPerCoin.niño = parseInt(puntosNiñoInput.value) || 10;
+        pointsPerCoin.niña = parseInt(puntosNiñaInput.value) || 10;
+        localStorage.setItem('pointsPerCoin', JSON.stringify(pointsPerCoin));
+        settingsModal.style.display = 'none';
+        resetGame();
+    }
+
+    function resetGame() {
+        gameRunning = false;
+        gameOver = false;
+        scores = { niño: 0, niña: 0 };
+        posCoches = [35, 55];
+        coches[0].style.left = `${posCoches[0]}%`;
+        coches[1].style.left = `${posCoches[1]}%`;
+        coinStates.forEach(c => { c.active = false; c.element.style.display = 'none'; });
+        startButton.innerHTML = '&#9654;';
+        winnerModal.style.display = 'none';
+        updateScores();
+        setupTimer();
+    }
+
+    function updateScores() {
+        scoreNiñoElement.textContent = scores.niño;
+        scoreNiñaElement.textContent = scores.niña;
+    }
+
+    // --- Lógica del Temporizador y Fin de Juego ---
+    function setupTimer() {
+        clearInterval(gameTimer);
+        // --- DURACIÓN DEL JUEGO EN SEGUNDOS ---
+        timeLeft = 15; // Cambia este valor para ajustar la duración
+        // ------------------------------------
+        updateTimerDisplay();
+    }
+
+    function startTimer() {
+        gameTimer = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const seconds = (timeLeft % 60).toString().padStart(2, '0');
+        timerElement.textContent = `${minutes}:${seconds}`;
+    }
+
+    function endGame() {
+        gameRunning = false;
+        gameOver = true;
+        clearInterval(gameTimer);
+
+        let winner, loser;
+
+        // Determinar ganador basado en la CONFIGURACIÓN de puntos
+        const niñoTarget = pointsPerCoin.niño;
+        const niñaTarget = pointsPerCoin.niña;
+
+        if (niñoTarget > niñaTarget) {
+            winner = { name: '¡Los Niños!', score: niñoTarget, img: 'imagenes/GanadorNiños.png' };
+            loser = { name: '¡Las Niñas!', score: niñaTarget, img: 'imagenes/GanadorNiñas.png' };
+        } else if (niñaTarget > niñoTarget) {
+            winner = { name: '¡Las Niñas!', score: niñaTarget, img: 'imagenes/GanadorNiñas.png' };
+            loser = { name: '¡Los Niños!', score: niñoTarget, img: 'imagenes/GanadorNiños.png' };
+        } else {
+            // En caso de empate en la configuración, declaramos a las niñas ganadoras por defecto.
+            winner = { name: '¡Las Niñas!', score: niñaTarget, img: 'imagenes/GanadorNiñas.png' };
+            loser = { name: '¡Los Niños!', score: niñoTarget, img: 'imagenes/GanadorNiños.png' };
+        }
+
+        showPodium(winner, loser);
+    }
+
+    function showPodium(winner, loser) {
+        const firstPlace = document.getElementById('podium-first');
+        const secondPlace = document.getElementById('podium-second');
+
+        // Limpiar clases de color anteriores
+        firstPlace.classList.remove('podium-style-niños', 'podium-style-niñas');
+        secondPlace.classList.remove('podium-style-niños', 'podium-style-niñas');
+
+        // Asignar contenido
+        podiumTitle.textContent = `El ganador es: ${winner.name}`;
+        podiumFirstName.textContent = winner.name;
+        podiumFirstScore.textContent = `Ofrenda: $${winner.score}`;
+        podiumFirstImg.src = winner.img;
+
+        podiumSecondName.textContent = loser.name;
+        podiumSecondScore.textContent = `Ofrenda: $${loser.score}`;
+        podiumSecondImg.src = loser.img;
+
+        // Asignar clases de color dinámicamente
+        if (winner.name === '¡Los Niños!') {
+            firstPlace.classList.add('podium-style-niños');
+            secondPlace.classList.add('podium-style-niñas');
+        } else {
+            firstPlace.classList.add('podium-style-niñas');
+            secondPlace.classList.add('podium-style-niños');
+        }
+
+        winnerModal.style.display = 'flex';
+        launchConfetti();
+    }
+
+    function launchConfetti() {
+        confettiContainer.innerHTML = ''; // Limpia confeti anterior
+        const confettiCount = 150;
+        const colors = ['#ff00ff', '#00ffff', '#ffff00', '#ff69b4', '#7fffd4', '#fdda24', '#ff4d4d'];
+
+        for (let i = 0; i < confettiCount; i++) {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.setProperty('--color', color);
+            confetti.style.left = Math.random() * 100 + 'vw';
+            // Empieza un poco por encima para que la caída sea natural
+            confetti.style.top = -20 - Math.random() * 20 + 'px'; 
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            confetti.style.animationDuration = 2 + Math.random() * 3 + 's';
+            confettiContainer.appendChild(confetti);
+        }
+    }
+
+    // --- Lógica del Juego Principal ---
+    function toggleGame() {
+        if (gameOver) return;
+        gameRunning = !gameRunning;
+        startButton.innerHTML = gameRunning ? '&#10074;&#10074;' : '&#9654;';
+
+        if (gameRunning) {
+            startTimer();
+            gameLoop();
+        } else {
+            clearInterval(gameTimer);
+        }
+    }
+
+    function moveCars(event) {
+        if (!gameRunning) return;
+        if (event.key === 'a' && posCoches[0] > limitesCoches[0].min) posCoches[0] -= 0.5;
+        else if (event.key === 'd' && posCoches[0] < limitesCoches[0].max) posCoches[0] += 0.5;
+        if (event.key === 'ArrowLeft' && posCoches[1] > limitesCoches[1].min) posCoches[1] -= 0.5;
+        else if (event.key === 'ArrowRight' && posCoches[1] < limitesCoches[1].max) posCoches[1] += 0.5;
+        coches[0].style.left = `${posCoches[0]}%`;
+        coches[1].style.left = `${posCoches[1]}%`;
+    }
+
+    function moveCoins() {
+        coinStates.forEach(state => {
+            if (state.active) {
+                state.top += coinSpeed;
+                state.scale = 0.1 + (state.top / window.innerHeight) * 0.9;
+                state.element.style.transform = `translateY(${state.top}px) scale(${state.scale})`;
+                state.element.style.left = `${state.lane}%`;
+                if (state.top > window.innerHeight) {
+                    state.active = false;
+                    state.element.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    function checkCollision() {
+        coinStates.forEach(state => {
+            if (state.active) {
+                const coinRect = state.element.getBoundingClientRect();
+                const carIndex = state.lane < 50 ? 0 : 1;
+                const carRect = coches[carIndex].getBoundingClientRect();
+                if (coinRect.bottom > carRect.top && coinRect.top < carRect.bottom &&
+                    coinRect.right > carRect.left && coinRect.left < carRect.right) {
+                    state.active = false;
+                    state.element.style.display = 'none';
+                    if (carIndex === 0) scores.niño += pointsPerCoin.niño;
+                    else scores.niña += pointsPerCoin.niña;
+                    updateScores();
+                }
+            }
+        });
+    }
+
+    let spawnCounter = 0;
+    function spawnCoin() {
+        spawnCounter++;
+        if (spawnCounter < spawnInterval) return;
+        spawnCounter = 0;
+        const inactiveCoin = coinStates.find(c => !c.active);
+        if (inactiveCoin) {
+            inactiveCoin.active = true;
+            inactiveCoin.top = -50;
+            inactiveCoin.scale = 0.1;
+            inactiveCoin.element.style.display = 'block';
+        }
+    }
+
+    function animateCars() {
+        const time = Date.now() / 1000; // Usar el tiempo para una animación suave
+
+        // Animar coche 1 (Niño)
+        const range1 = limitesCoches[0].max - limitesCoches[0].min;
+        const center1 = (limitesCoches[0].max + limitesCoches[0].min) / 2;
+        const newPos1 = center1 + (range1 / 2) * Math.sin(time * 1.5); // Movimiento suave
+        coches[0].style.left = `${newPos1}%`;
+
+        // Animar coche 2 (Niña)
+        const range2 = limitesCoches[1].max - limitesCoches[1].min;
+        const center2 = (limitesCoches[1].max + limitesCoches[1].min) / 2;
+        // Usar una frecuencia ligeramente diferente para que no se muevan idénticos
+        const newPos2 = center2 + (range2 / 2) * Math.sin(time * 1.7 + 0.5);
+        coches[1].style.left = `${newPos2}%`;
+    }
+
+    function gameLoop() {
+        if (!gameRunning) return;
+        spawnCoin();
+        moveCoins();
+        checkCollision();
+        animateCars(); // Añadir la animación de los coches en cada frame
+        requestAnimationFrame(gameLoop);
+    }
+
+    // --- Event Listeners ---
+    startButton.addEventListener('click', toggleGame);
+    settingsButton.addEventListener('click', () => {
+        if (gameRunning) toggleGame();
+        settingsModal.style.display = 'flex';
+    });
+    saveSettingsButton.addEventListener('click', saveSettings);
+    homeBtn.addEventListener('click', () => {
+        window.location.href = 'index.html'; // Redirige al menú principal
+    });
+    restartGameButton.addEventListener('click', resetGame);
+    exitToMenuBtn.addEventListener('click', () => {
+        window.location.href = 'index.html'; // Redirige al menú principal
+    });
+    window.addEventListener('keydown', moveCars);
+
+    // --- Inicialización ---
+    loadSettings();
+    updateScores();
+});
