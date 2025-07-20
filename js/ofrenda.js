@@ -1,3 +1,6 @@
+// Constante para el retardo del sonido de monedas (en milisegundos)
+const SOUND_DELAY_MS = 1000; // 1000ms = 1 segundo de retardo
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Elementos del DOM ---
     const startButton = document.getElementById('start-button');
@@ -23,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartGameButton = document.getElementById('restart-game');
     const exitToMenuBtn = document.getElementById('exit-to-menu-btn');
     const confettiContainer = document.querySelector('.confetti-container');
+    const countdownOverlay = document.getElementById('countdown-overlay');
+    const countdownElement = document.getElementById('countdown');
 
     // --- Configuración del Juego ---
     let gameRunning = false;
@@ -75,6 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
         coinStates.forEach(c => { c.active = false; c.element.style.display = 'none'; });
         startButton.innerHTML = '&#9654;';
         winnerModal.style.display = 'none';
+        countdownOverlay.style.display = 'none'; // Asegurarse de que el contador esté oculto
+        toggleCarSound(false); // Asegurarse de que el sonido del motor esté detenido
         updateScores();
         setupTimer();
     }
@@ -88,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupTimer() {
         clearInterval(gameTimer);
         // --- DURACIÓN DEL JUEGO EN SEGUNDOS ---
-        timeLeft = 15; // Cambia este valor para ajustar la duración
+        timeLeft = 2; // Cambia este valor para ajustar la duración
         // ------------------------------------
         updateTimerDisplay();
     }
@@ -186,16 +193,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Lógica del Juego Principal ---
-    function toggleGame() {
-        if (gameOver) return;
-        gameRunning = !gameRunning;
-        startButton.innerHTML = gameRunning ? '&#10074;&#10074;' : '&#9654;';
+    function startRaceCountdown() {
+        countdownOverlay.style.display = 'flex';
+        let count = 3;
 
-        if (gameRunning) {
-            startTimer();
-            gameLoop();
+        countdownElement.textContent = count;
+        countdownElement.style.animation = 'none';
+        void countdownElement.offsetWidth;
+        countdownElement.style.animation = 'countdown-zoom 1s ease-in-out';
+
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownElement.textContent = count;
+                countdownElement.style.animation = 'none';
+                void countdownElement.offsetWidth;
+                countdownElement.style.animation = 'countdown-zoom 1s ease-in-out';
+            } else if (count === 0) {
+                countdownElement.textContent = '¡GO!';
+                countdownElement.style.animation = 'none';
+                void countdownElement.offsetWidth;
+                countdownElement.style.animation = 'countdown-zoom 1s ease-in-out';
+            } else {
+                clearInterval(countdownInterval);
+                setTimeout(() => {
+                    countdownOverlay.style.display = 'none';
+                    gameRunning = true;
+                    startButton.innerHTML = '&#10074;&#10074;';
+                    toggleCarSound(true); // Iniciar sonido del motor al comenzar la carrera
+                    startTimer();
+                    gameLoop();
+                }, 500);
+            }
+        }, 1000);
+    }
+
+    function toggleGame() {
+        if (gameOver) {
+            resetGame();
+            return;
+        }
+
+        if (!gameRunning) {
+            startRaceCountdown();
         } else {
+            gameRunning = false;
+            startButton.innerHTML = '&#9654;';
             clearInterval(gameTimer);
+            toggleCarSound(false); // Detener sonido del motor al pausar
         }
     }
 
@@ -237,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (carIndex === 0) scores.niño += pointsPerCoin.niño;
                     else scores.niña += pointsPerCoin.niña;
                     updateScores();
+                    playCoinSound(); // Reproducir sonido de moneda al recolectar
                 }
             }
         });
@@ -253,6 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
             inactiveCoin.top = -50;
             inactiveCoin.scale = 0.1;
             inactiveCoin.element.style.display = 'block';
+            // Reproducir sonido cuando aparece una nueva moneda
+            playCoinSound();
         }
     }
 
@@ -298,7 +346,125 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     window.addEventListener('keydown', moveCars);
 
+    // --- Sistema de sonidos ---
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let coinSoundBuffer = null;
+    
+    // Precargar sonidos
+    async function loadSounds() {
+        try {
+            // Precargar sonido de moneda
+            const response = await fetch('sonidos/sumando.mp3');
+            const arrayBuffer = await response.arrayBuffer();
+            coinSoundBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            console.log("Sonido de moneda cargado correctamente");
+        } catch (error) {
+            console.error("Error al cargar sonidos:", error);
+        }
+    }
+    
+    function playCoinSound() {
+        if (!coinSoundBuffer) {
+            console.log("El buffer de sonido no está cargado aún");
+            return;
+        }
+        
+        // Usar setTimeout para el retardo
+        setTimeout(() => {
+            try {
+                const source = audioContext.createBufferSource();
+                source.buffer = coinSoundBuffer;
+                source.connect(audioContext.destination);
+                source.start(0);
+                console.log(`Reproduciendo sonido de moneda (con retardo de ${SOUND_DELAY_MS}ms)`);
+            } catch (error) {
+                console.error("Error al reproducir sonido de moneda:", error);
+            }
+        }, SOUND_DELAY_MS);
+    }
+    
+    // Elementos de audio del DOM (para compatibilidad con móviles)
+    const backgroundMusic = document.getElementById('background-music');
+    const carSound = document.getElementById('car-sound');
+    
+    // Configurar volumen por defecto
+    backgroundMusic.volume = 0.5;  // 50% de volumen para la música de fondo
+    carSound.volume = 0.3;         // 30% de volumen para el sonido del motor
+    
+    // Intentar reproducir la música al cargar la página
+    function startBackgroundMusic() {
+        // Los navegadores móviles requieren interacción del usuario para reproducir audio
+        const playPromise = backgroundMusic.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("La reproducción automática fue prevenida. La música se reproducirá después de la interacción del usuario.");
+                // Configurar para reproducir en el primer clic
+                const playOnInteraction = () => {
+                    backgroundMusic.play();
+                    document.removeEventListener('click', playOnInteraction);
+                    document.removeEventListener('keydown', playOnInteraction);
+                };
+                document.addEventListener('click', playOnInteraction);
+                document.addEventListener('keydown', playOnInteraction);
+            });
+        }
+    }
+    
+    // Control del sonido del motor
+    function toggleCarSound(play) {
+        if (play) {
+            const playPromise = carSound.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("No se pudo reproducir el sonido del motor:", error);
+                });
+            }
+        } else {
+            carSound.pause();
+            carSound.currentTime = 0;
+        }
+    }
+    
+    // Reproducir sonido de moneda
+    function playCoinSound() {
+        if (!coinSoundBuffer) {
+            console.log("El buffer de sonido no está cargado aún");
+            return;
+        }
+        
+        // Usar setTimeout para el retardo configurable
+        setTimeout(() => {
+            try {
+                const source = audioContext.createBufferSource();
+                source.buffer = coinSoundBuffer;
+                source.connect(audioContext.destination);
+                source.start(0);
+                console.log(`Reproduciendo sonido de moneda (con retardo de ${SOUND_DELAY_MS}ms)`);
+            } catch (error) {
+                console.error("Error al reproducir sonido de moneda:", error);
+            }
+        }, SOUND_DELAY_MS);
+    }
+
     // --- Inicialización ---
     loadSettings();
     updateScores();
+    
+    // Ajustar volumen (opcional, 0.5 = 50% de volumen)
+    backgroundMusic.volume = 0.5;
+    
+    // Iniciar música y cargar sonidos
+    startBackgroundMusic();
+    loadSounds();
+    
+    // Desbloquear audio en móviles al hacer clic
+    document.addEventListener('click', function initAudio() {
+        if (audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                console.log('AudioContext desbloqueado');
+            });
+        }
+        document.removeEventListener('click', initAudio);
+    });
 });
