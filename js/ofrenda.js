@@ -1,11 +1,96 @@
 // Constante para el retardo del sonido de monedas (en milisegundos)
-const SOUND_DELAY_MS = 1000; // 1000ms = 1 segundo de retardo
+const SOUND_DELAY_MS = 3500; // 1000ms = 1 segundo de retardo
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Solución sonido doble en pantalla completa ---
+    document.addEventListener('fullscreenchange', () => {
+        // Detener sonidos de moneda y vaciar la cola
+        if (typeof coinSoundQueue !== 'undefined') coinSoundQueue.length = 0;
+        if (typeof coinSoundPlaying !== 'undefined') coinSoundPlaying = false;
+        // Opcional: Suspender el contexto de audio para evitar dobles
+        if (typeof audioContext !== 'undefined' && audioContext.state === 'running') {
+            audioContext.suspend();
+            setTimeout(() => {
+                audioContext.resume();
+            }, 300); // Pequeña pausa para evitar solapamiento
+        }
+    });
+    // --- Animación de nubes ---
+    const clouds = [
+        document.querySelector('.cloud1'),
+        document.querySelector('.cloud2'),
+        document.querySelector('.cloud3'),
+        document.querySelector('.cloud4'),
+        document.querySelector('.cloud5'),
+        document.querySelector('.cloud6'),
+        document.querySelector('.cloud7')
+    ];
+    // Valores iniciales y velocidad aleatoria para cada nube
+    const cloudStates = clouds.map((cloud, i) => ({
+        elem: cloud,
+        left: parseFloat(getComputedStyle(cloud).left),
+        top: parseFloat(getComputedStyle(cloud).top),
+        width: parseFloat(getComputedStyle(cloud).width),
+        speed: 0.15 + Math.random() * 0.1 + i * 0.03 // Diferente velocidad para cada nube
+    }));
+    function animateClouds() {
+        const vw = window.innerWidth;
+        cloudStates.forEach(state => {
+            state.left += state.speed;
+            if (state.left > vw) {
+                state.left = -state.width - 20; // Reinicia fuera de pantalla izquierda
+            }
+            state.elem.style.left = state.left + 'px';
+        });
+        requestAnimationFrame(animateClouds);
+    }
+    // Convertir % inicial a px si es necesario
+    cloudStates.forEach(state => {
+        if (String(state.left).includes('%')) {
+            // Si left está en %, convertir a px
+            const percent = parseFloat(state.left);
+            state.left = vw * percent / 100;
+            state.elem.style.left = state.left + 'px';
+        }
+    });
+    animateClouds();
+
+    // --- Sonidos de la pantalla de ganador ---
+    let confetiAudio = document.getElementById('confeti-audio');
+    if (!confetiAudio) {
+        confetiAudio = document.createElement('audio');
+        confetiAudio.id = 'confeti-audio';
+        confetiAudio.src = 'sonidos/confeti.mp3';
+        confetiAudio.preload = 'auto';
+        document.body.appendChild(confetiAudio);
+    }
+    let ganadorAudio = document.getElementById('ganador-audio');
+    if (!ganadorAudio) {
+        ganadorAudio = document.createElement('audio');
+        ganadorAudio.id = 'ganador-audio';
+        ganadorAudio.src = 'sonidos/ganador.mp3';
+        ganadorAudio.preload = 'auto';
+        document.body.appendChild(ganadorAudio);
+    }
     // --- Elementos del DOM ---
     const startButton = document.getElementById('start-button');
+    const roadContainer = document.querySelector('.road-container');
     const settingsButton = document.getElementById('settings-button');
     const homeBtn = document.getElementById('home-btn');
+
+    // --- Sonidos para botones ---
+    const hoverSound = new Audio('sonidos/hover.mp3');
+    const clickSound = new Audio('sonidos/click.mp3');
+    [startButton, homeBtn, settingsButton].forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            hoverSound.currentTime = 0;
+            hoverSound.play();
+        });
+        btn.addEventListener('click', () => {
+            clickSound.currentTime = 0;
+            clickSound.play();
+        });
+    });
     const coches = [document.getElementById('coche1'), document.getElementById('coche2')];
     const coins = Array.from(document.querySelectorAll('.coin'));
     const settingsModal = document.getElementById('settings-modal');
@@ -81,9 +166,29 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.innerHTML = '&#9654;';
         winnerModal.style.display = 'none';
         countdownOverlay.style.display = 'none'; // Asegurarse de que el contador esté oculto
+        if (roadContainer) roadContainer.classList.remove('road-anim-running');
         toggleCarSound(false); // Asegurarse de que el sonido del motor esté detenido
+        // Detener sonidos de ganador y confeti si están sonando
+        try {
+            const confetiAudio = document.getElementById('confeti-audio');
+            const ganadorAudio = document.getElementById('ganador-audio');
+            if (confetiAudio) {
+                confetiAudio.pause();
+                confetiAudio.currentTime = 0;
+            }
+            if (ganadorAudio) {
+                ganadorAudio.pause();
+                ganadorAudio.currentTime = 0;
+            }
+        } catch (e) { console.warn('No se pudo detener algún sonido de ganador/confeti:', e); }
         updateScores();
         setupTimer();
+        // Reanudar el contexto de audio si está suspendido (para que el sonido de monedas funcione tras reiniciar)
+        if (audioContext && audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                console.log('AudioContext reanudado tras reiniciar');
+            });
+        }
     }
 
     function updateScores() {
@@ -95,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupTimer() {
         clearInterval(gameTimer);
         // --- DURACIÓN DEL JUEGO EN SEGUNDOS ---
-        timeLeft = 2; // Cambia este valor para ajustar la duración
+        timeLeft = 30; // Cambia este valor para ajustar la duración
         // ------------------------------------
         updateTimerDisplay();
     }
@@ -143,6 +248,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showPodium(winner, loser) {
+    // Detener sonidos de monedas y autos
+    try {
+        toggleCarSound(false); // Detener autosonido.mp3 (motor)
+        if (audioContext && audioContext.state !== 'closed') {
+            audioContext.suspend(); // Detener todos los sonidos activos (sumando.mp3)
+        }
+    } catch (e) { console.warn('No se pudo detener algún sonido:', e); }
+    // Reproducir sonidos de ganador y confeti
+    try {
+        const confetiAudio = document.getElementById('confeti-audio');
+        const ganadorAudio = document.getElementById('ganador-audio');
+        if (confetiAudio) {
+            confetiAudio.currentTime = 0;
+            confetiAudio.play();
+        }
+        if (ganadorAudio) {
+            ganadorAudio.currentTime = 0;
+            ganadorAudio.play();
+        }
+    } catch (e) { console.warn('No se pudo reproducir algún sonido de victoria:', e); }
+    // Detener sonidos de monedas y autos
+    try {
+        toggleCarSound(false); // Detener autosonido.mp3 (motor)
+        if (audioContext && audioContext.state !== 'closed') {
+            audioContext.suspend(); // Detener todos los sonidos activos (sumando.mp3)
+        }
+    } catch (e) { console.warn('No se pudo detener algún sonido:', e); }
         const firstPlace = document.getElementById('podium-first');
         const secondPlace = document.getElementById('podium-second');
 
@@ -220,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     countdownOverlay.style.display = 'none';
                     gameRunning = true;
                     startButton.innerHTML = '&#10074;&#10074;';
+                    if (roadContainer) roadContainer.classList.add('road-anim-running');
                     toggleCarSound(true); // Iniciar sonido del motor al comenzar la carrera
                     startTimer();
                     gameLoop();
@@ -235,10 +368,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!gameRunning) {
+            try {
+                const enSusMarcasSound = document.getElementById('en-sus-marcas-sound');
+                if (enSusMarcasSound) {
+                    enSusMarcasSound.currentTime = 0;
+                    enSusMarcasSound.play();
+                }
+            } catch (e) { console.warn("No se pudo reproducir 'En sus marcas':", e); }
             startRaceCountdown();
         } else {
             gameRunning = false;
             startButton.innerHTML = '&#9654;';
+            if (roadContainer) roadContainer.classList.remove('road-anim-running');
             clearInterval(gameTimer);
             toggleCarSound(false); // Detener sonido del motor al pausar
         }
@@ -363,22 +504,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    let coinSoundQueue = [];
+    let coinSoundPlaying = false;
+
     function playCoinSound() {
         if (!coinSoundBuffer) {
             console.log("El buffer de sonido no está cargado aún");
             return;
         }
-        
-        // Usar setTimeout para el retardo
+        // Agregar a la cola
+        coinSoundQueue.push({});
+        processCoinSoundQueue();
+    }
+
+    function processCoinSoundQueue() {
+        if (coinSoundPlaying || coinSoundQueue.length === 0) return;
+        coinSoundPlaying = true;
         setTimeout(() => {
             try {
                 const source = audioContext.createBufferSource();
                 source.buffer = coinSoundBuffer;
                 source.connect(audioContext.destination);
                 source.start(0);
+                source.onended = () => {
+                    coinSoundPlaying = false;
+                    coinSoundQueue.shift();
+                    processCoinSoundQueue();
+                };
                 console.log(`Reproduciendo sonido de moneda (con retardo de ${SOUND_DELAY_MS}ms)`);
             } catch (error) {
                 console.error("Error al reproducir sonido de moneda:", error);
+                coinSoundPlaying = false;
+                coinSoundQueue.shift();
+                processCoinSoundQueue();
             }
         }, SOUND_DELAY_MS);
     }
