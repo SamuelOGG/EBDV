@@ -2,14 +2,307 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Concursos</title>
-  <link rel="stylesheet" href="css/estilo.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitados</title>
+  <link rel="stylesheet" href="css/invitados.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-  <div class="menu-container">
-    <h1>INVITADOS</h1>
-    <p>Esta sección contendrá la información de los concursos del evento.</p>
+  <!-- Botón hamburguesa -->
+  <button id="menu-btn" class="menu-btn" aria-label="Abrir menú">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Menú lateral -->
+  <nav id="side-menu" class="side-menu">
+    <button id="close-menu" class="close-menu" aria-label="Cerrar menú">&times;</button>
+    <ul class="menu-personajes">
+      <li class="draggable-option" draggable="true" data-cantidad="10"><div class="icons-row"> <img src="imagenes/FotosPerfil/CaritaFeliz.png"> </div> <span class="cantidad">x10</span></li>
+      <li class="draggable-option" draggable="true" data-cantidad="5"><div class="icons-row"> <img src="imagenes/FotosPerfil/CaritaFeliz.png"> </div> <span class="cantidad">x5</span></li>
+      <li class="draggable-option" draggable="true" data-cantidad="3"><div class="icons-row"> <img src="imagenes/FotosPerfil/CaritaFeliz.png"> </div> <span class="cantidad">x3</span></li>
+      <li class="draggable-option" draggable="true" data-cantidad="2"><div class="icons-row"> <img src="imagenes/FotosPerfil/CaritaFeliz.png"> </div> <span class="cantidad">x2</span></li>
+      <li class="draggable-option" draggable="true" data-cantidad="1"><div class="icons-row"> <img src="imagenes/FotosPerfil/CaritaFeliz.png"> </div> <span class="cantidad">x1</span></li>
+    </ul>
+    <div class="menu-actions">
+      <a href="index.html" class="menu-action-btn" title="Volver al Inicio">
+        <i class="fas fa-home"></i>
+      </a>
+      <button id="refresh-emojis" class="menu-action-btn" title="Quitar todos los emojis">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+      <button id="show-winner-btn" class="menu-action-btn" title="Anunciar Ganador">
+        <i class="fas fa-play"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="feed-container">
+    <!-- Publicación 1 -->
+    <div class="post-wrapper">
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <img src="imagenes/FotosPerfil/Amigos.png" alt="Foto de perfil" class="profile-pic">
+            <div class="post-info">
+              <span class="user-name">Amigos</span>
+              <span class="post-time">Hace 5 minutos</span>
+            </div>
+          </div>
+          <div class="post-content">
+            <p>¡Estamos muy emocionados por el concurso de invitados! ¿Ya tienes a tus amigos listos? #ConcursoDeInvitados #EBDV2025</p>
+            <div class="post-image-bg dropzone"></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button><i class="fas fa-thumbs-up"></i> Me gusta</button>
+          <button><i class="fas fa-comment"></i> Comentar</button>
+          <button><i class="fas fa-share"></i> Compartir</button>
+        </div>
+      </div>
+      <div class="post-counter-container">
+        <div class="counter-box">
+          <span class="counter-value">0</span>
+          <span class="counter-label">Invitados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publicación 2 -->
+    <div class="post-wrapper">
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <img src="imagenes/FotosPerfil/Angelitos.png" alt="Foto de perfil" class="profile-pic">
+            <div class="post-info">
+              <span class="user-name">Angelitos</span>
+              <span class="post-time">Hace 1 hora</span>
+            </div>
+          </div>
+          <div class="post-content">
+            <p>¡Recuerda que entre más amigos invites, más oportunidades tienes de ganar! ¡No te quedes fuera! #InvitadosEspeciales #Premios</p>
+            <div class="post-image-bg dropzone"></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button><i class="fas fa-thumbs-up"></i> Me gusta</button>
+          <button><i class="fas fa-comment"></i> Comentar</button>
+          <button><i class="fas fa-share"></i> Compartir</button>
+        </div>
+      </div>
+      <div class="post-counter-container">
+        <div class="counter-box">
+          <span class="counter-value">0</span>
+          <span class="counter-label">Invitados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publicación 3 -->
+    <div class="post-wrapper">
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <img src="imagenes/FotosPerfil/Joyitas.png" alt="Foto de perfil" class="profile-pic">
+            <div class="post-info">
+              <span class="user-name">Joyitas</span>
+              <span class="post-time">Ayer</span>
+            </div>
+          </div>
+          <div class="post-content">
+            <p>La competencia de invitados está muy reñida. ¡Sigue invitando y acumula puntos para tu clase! #CompetenciaSana #NiñosFelices</p>
+            <div class="post-image-bg dropzone"></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button><i class="fas fa-thumbs-up"></i> Me gusta</button>
+          <button><i class="fas fa-comment"></i> Comentar</button>
+          <button><i class="fas fa-share"></i> Compartir</button>
+        </div>
+      </div>
+      <div class="post-counter-container">
+        <div class="counter-box">
+          <span class="counter-value">0</span>
+          <span class="counter-label">Invitados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publicación 4 -->
+    <div class="post-wrapper">
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <img src="imagenes/FotosPerfil/Mensajeros.png" alt="Foto de perfil" class="profile-pic">
+            <div class="post-info">
+              <span class="user-name">Mensajeros</span>
+              <span class="post-time">2 días atrás</span>
+            </div>
+          </div>
+          <div class="post-content">
+            <p>¡Qué alegría ver tantas caras nuevas! Gracias por traer a tus invitados. ¡La estamos pasando genial! #NuevosAmigos #EBDV</p>
+            <div class="post-image-bg dropzone"></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button><i class="fas fa-thumbs-up"></i> Me gusta</button>
+          <button><i class="fas fa-comment"></i> Comentar</button>
+          <button><i class="fas fa-share"></i> Compartir</button>
+        </div>
+      </div>
+      <div class="post-counter-container">
+        <div class="counter-box">
+          <span class="counter-value">0</span>
+          <span class="counter-label">Invitados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publicación 5 -->
+    <div class="post-wrapper" data-image-name="generacion">
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <img src="imagenes/FotosPerfil/GeneracionDeVida.png" alt="Foto de perfil" class="profile-pic">
+            <div class="post-info">
+              <span class="user-name">Generación de Vida</span>
+              <span class="post-time">2 días atrás</span>
+            </div>
+          </div>
+          <div class="post-content">
+            <p>El premio para el equipo con más invitados es increíble. ¡No te rindas, aún hay tiempo! #ConcursoInfantil #Sorpresas</p>
+            <div class="post-image-bg dropzone"></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button><i class="fas fa-thumbs-up"></i> Me gusta</button>
+          <button><i class="fas fa-comment"></i> Comentar</button>
+          <button><i class="fas fa-share"></i> Compartir</button>
+        </div>
+      </div>
+      <div class="post-counter-container">
+        <div class="counter-box">
+          <span class="counter-value">0</span>
+          <span class="counter-label">Invitados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publicación 6 -->
+    <div class="post-wrapper">
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <img src="imagenes/FotosPerfil/Discipulos.png" alt="Foto de perfil" class="profile-pic">
+            <div class="post-info">
+              <span class="user-name">Discipulos</span>
+              <span class="post-time">3 días atrás</span>
+            </div>
+          </div>
+          <div class="post-content">
+            <p>Un aplauso para todos los que han traído un invitado. ¡Ustedes hacen de este evento algo especial! #GraciasInvitados #Comunidad</p>
+            <div class="post-image-bg dropzone"></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button><i class="fas fa-thumbs-up"></i> Me gusta</button>
+          <button><i class="fas fa-comment"></i> Comentar</button>
+          <button><i class="fas fa-share"></i> Compartir</button>
+        </div>
+      </div>
+      <div class="post-counter-container">
+        <div class="counter-box">
+          <span class="counter-value">0</span>
+          <span class="counter-label">Invitados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publicación 7 -->
+    <div class="post-wrapper">
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <img src="imagenes/FotosPerfil/Corderitos.png" alt="Foto de perfil" class="profile-pic">
+            <div class="post-info">
+              <span class="user-name">Corderitos</span>
+              <span class="post-time">4 días atrás</span>
+            </div>
+          </div>
+          <div class="post-content">
+            <p>¿Ya conociste a los invitados de los otros equipos? ¡Hagamos nuevos amigos todos juntos! #Amistad #Juegos</p>
+            <div class="post-image-bg dropzone"></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button><i class="fas fa-thumbs-up"></i> Me gusta</button>
+          <button><i class="fas fa-comment"></i> Comentar</button>
+          <button><i class="fas fa-share"></i> Compartir</button>
+        </div>
+      </div>
+      <div class="post-counter-container">
+        <div class="counter-box">
+          <span class="counter-value">0</span>
+          <span class="counter-label">Invitados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publicación 8 -->
+    <div class="post-wrapper">
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <img src="imagenes/FotosPerfil/Ciudadanos.png" alt="Foto de perfil" class="profile-pic">
+            <div class="post-info">
+              <span class="user-name">Ciudadanos</span>
+              <span class="post-time">5 días atrás</span>
+            </div>
+          </div>
+          <div class="post-content">
+            <p>¡Último día para traer invitados! Cada amigo cuenta para ganar el gran premio. ¡Vamos con todo! #RectaFinal #GanaEquipo</p>
+            <div class="post-image-bg dropzone"></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <button><i class="fas fa-thumbs-up"></i> Me gusta</button>
+          <button><i class="fas fa-comment"></i> Comentar</button>
+          <button><i class="fas fa-share"></i> Compartir</button>
+        </div>
+      </div>
+      <div class="post-counter-container">
+        <div class="counter-box">
+          <span class="counter-value">0</span>
+          <span class="counter-label">Invitados</span>
+        </div>
+      </div>
+    </div>
+
   </div>
-  <script src="js/menu.js"></script>
+
+  <script src="js/invitados.js"></script>
+
+  <!-- Pantalla del Ganador -->
+  <div id="winner-screen" class="winner-screen-overlay">
+    <div class="winner-content">
+      <div id="confetti-container"></div>
+      <h2 class="winner-title">¡El ganador es!</h2>
+      <img id="winner-image" src="" alt="Ganador" class="winner-image">
+      <div class="winner-score-container">
+        <span id="winner-score" class="winner-score-number">0</span>
+        <span class="winner-score-label">Invitados</span>
+      </div>
+      <div class="winner-buttons">
+        <button id="close-winner-btn" class="winner-btn">CERRAR</button>
+        <a href="index.html" class="winner-btn">SALIR AL MENÚ</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sonidos -->
+  <audio id="confetti-sound" src="sonidos/confeti.mp3"></audio>
+  <audio id="winner-sound" src="sonidos/ganador.mp3"></audio>
+
 </body>
 </html>
