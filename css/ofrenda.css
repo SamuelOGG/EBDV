@@ -71,7 +71,7 @@ body {
 
 @keyframes move-road {
     from { background-position-y: 0; }
-    to { background-position-y: -80px; }
+    to { background-position-y: 80px; }
 }
 
 /* Clouds */
