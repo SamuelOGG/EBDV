@@ -72,6 +72,18 @@ function volver() {
   
   // === Variables globales ===
   const sumandoSound = new Audio('../sonidos/sumando.mp3');
+
+  // === Lógica de persistencia de contadores ===
+  const CONTADORES_STORAGE_KEY = 'contadoresEdificioEBDV';
+  // Carga los contadores desde localStorage o inicializa un objeto vacío
+  let _contadoresEdificio = JSON.parse(localStorage.getItem(CONTADORES_STORAGE_KEY)) || {};
+  window._contadoresEdificio = _contadoresEdificio;
+
+  // Función para guardar los contadores en localStorage
+  function guardarContadores() {
+    localStorage.setItem(CONTADORES_STORAGE_KEY, JSON.stringify(window._contadoresEdificio));
+  }
+
   let isPanning = false;
   let startX, startY;
   let offsetX = 0;
@@ -194,26 +206,112 @@ function volver() {
     }
   
     ciudad.appendChild(img);
+    // Editor flotante de niños/niñas
+    img.addEventListener('click', function abrirEditorContador(e) {
+      if (document.getElementById('editor-contador')) {
+        document.getElementById('editor-contador').remove();
+      }
+      e.stopPropagation();
+      // Obtener id correcto
+      const idEdificio = img.id || img.getAttribute('data-id') || img.src || img;
+      const datos = window._contadoresEdificio[idEdificio] || {ninas:0, ninos:0};
+      // Crear editor flotante
+      const editor = document.createElement('div');
+      editor.id = 'editor-contador';
+      editor.style.position = 'absolute';
+      // Posición robusta con getBoundingClientRect y scroll
+      const rect = img.getBoundingClientRect();
+      const scrollX = window.scrollX || window.pageXOffset;
+      const scrollY = window.scrollY || window.pageYOffset;
+      editor.style.left = (rect.right + 10 + scrollX) + 'px';
+      editor.style.top = (rect.top - 10 + scrollY) + 'px';
+      editor.style.background = '#222';
+      editor.style.color = '#ffe066';
+      editor.style.border = '2px solid #ffe066';
+      editor.style.borderRadius = '10px';
+      editor.style.padding = '12px 18px 10px 18px';
+      editor.style.zIndex = 9999;
+      editor.style.fontFamily = "'Press Start 2P', cursive";
+      editor.innerHTML = `
+        <label style='font-size:13px;'>👧 <input id='edit-ninas' type='number' min='0' style='width:40px;font-size:13px;' value='${datos.ninas}'></label>
+        <label style='font-size:13px;margin-left:12px;'>👦 <input id='edit-ninos' type='number' min='0' style='width:40px;font-size:13px;' value='${datos.ninos}'></label>
+        <br><button id='guardar-contador-btn' style='margin-top:8px;font-size:13px;background:#ffe066;color:#222;border-radius:6px;border:none;padding:4px 12px;font-family:inherit;font-weight:bold;cursor:pointer;'>Guardar</button>
+      `;
+      document.body.appendChild(editor);
+      // Guardar cambios
+      editor.querySelector('#guardar-contador-btn').onclick = function(ev) {
+        ev.stopPropagation();
+        const ninas = parseInt(editor.querySelector('#edit-ninas').value) || 0;
+        const ninos = parseInt(editor.querySelector('#edit-ninos').value) || 0;
+        window._contadoresEdificio[idEdificio] = {ninas, ninos};
+        guardarContadores();
+        actualizarContadores();
+        editor.remove();
+      };
+      // Cerrar al hacer clic fuera
+      setTimeout(() => {
+        document.addEventListener('mousedown', function cerrarEditor(ev) {
+          if (!editor.contains(ev.target)) {
+            editor.remove();
+            document.removeEventListener('mousedown', cerrarEditor);
+          }
+        });
+      }, 50);
+    });
   });
   
-  let nombresBloqueados = false;
+  // --- Persistencia del estado de bloqueo de nombres ---
+const LOCK_STORAGE_KEY = 'nombresBloqueadosEBDV';
+let nombresBloqueados = false;
 
-  // --- Lógica de bloqueo de nombres ---
-  const lockBtn = document.getElementById('lock-btn');
+const lockBtn = document.getElementById('lock-btn');
 
-  lockBtn.addEventListener('click', () => {
-    nombresBloqueados = !nombresBloqueados; // Invierte el estado
+// Al cargar la página, lee el estado de bloqueo de localStorage
+const savedLockState = localStorage.getItem(LOCK_STORAGE_KEY);
+if (savedLockState === 'true') {
+  nombresBloqueados = true;
+  lockBtn.innerHTML = '&#128274;';
+  lockBtn.title = 'Desbloquear Nombres';
+  document.body.classList.add('nombres-bloqueados');
+} else {
+  nombresBloqueados = false;
+  lockBtn.innerHTML = '&#128273;';
+  lockBtn.title = 'Bloquear Nombres';
+  document.body.classList.remove('nombres-bloqueados');
+}
 
-    if (nombresBloqueados) {
-      lockBtn.innerHTML = '🔒'; // Cambia a candado cerrado
-      lockBtn.title = 'Desbloquear Nombres';
-      document.body.classList.add('nombres-bloqueados');
-    } else {
-      lockBtn.innerHTML = '🔓'; // Cambia a candado abierto
-      lockBtn.title = 'Bloquear Nombres';
-      document.body.classList.remove('nombres-bloqueados');
-    }
-  });
+lockBtn.addEventListener('click', () => {
+  nombresBloqueados = !nombresBloqueados;
+  localStorage.setItem(LOCK_STORAGE_KEY, nombresBloqueados);
+  if (nombresBloqueados) {
+    lockBtn.innerHTML = '&#128274;';
+    lockBtn.title = 'Desbloquear Nombres';
+    document.body.classList.add('nombres-bloqueados');
+  } else {
+    lockBtn.innerHTML = '&#128273;';
+    lockBtn.title = 'Bloquear Nombres';
+    document.body.classList.remove('nombres-bloqueados');
+  }
+});
+
+  // --- Botón de reinicio de contadores ---
+  const resetCountersBtn = document.getElementById('reset-counters-btn');
+  if (resetCountersBtn) {
+    resetCountersBtn.addEventListener('click', () => {
+      // Reproducir sonido de clic si existe función
+      if (typeof reproducirSonido === 'function') reproducirSonido('sonido-click');
+      // Limpiar objeto global y localStorage
+      window._contadoresEdificio = {};
+      localStorage.removeItem('contadoresEdificioEBDV');
+      // Eliminar todos los grupos del mapa y sus posiciones guardadas
+      document.querySelectorAll('.grupo-en-mapa').forEach(grupo => {
+        const id = grupo.getAttribute('data-id');
+        if (id) localStorage.removeItem('pos-' + id);
+        grupo.remove();
+      });
+      actualizarContadores();
+    });
+  }
 
   
   // Mejor drag & drop individual para nombres flotantes
@@ -426,6 +524,7 @@ function volver() {
         sumandoSound.currentTime = 0;
         sumandoSound.play();
         actualizarContadores();
+        guardarContadores();
       }, 720);
       window._grupoDragInfo = null;
       return;
@@ -457,6 +556,7 @@ function volver() {
     }));
     window._grupoDragInfo = null;
     actualizarContadores();
+    guardarContadores();
   });
   
   // --- Selección y rotación de grupos en el mapa ---
@@ -539,13 +639,42 @@ function volver() {
       if (id) localStorage.removeItem('pos-' + id);
       grupo.remove();
       actualizarContadores(); // Actualiza contadores después de borrar
+      guardarContadores();
     }
   });
   
   // --- Restaurar grupos del menú colocados en el mapa desde localStorage ---
   window.addEventListener('DOMContentLoaded', () => {
-    // (Opcional) Limpia contadores temporales
-    window._contadoresEdificio = {};
+    // Restaurar grupos del mapa
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('pos-grupo-')) {
+        const datos = JSON.parse(localStorage.getItem(key));
+        if (!datos) return;
+        // Crear el grupo visual
+        const id = key.replace('pos-', '');
+        const grupoDiv = document.createElement('div');
+        grupoDiv.className = 'nombre-flotante grupo-en-mapa';
+        grupoDiv.setAttribute('data-id', id);
+        grupoDiv.setAttribute('draggable', 'false');
+        grupoDiv.style.position = 'absolute';
+        grupoDiv.style.left = datos.left;
+        grupoDiv.style.top = datos.top;
+        grupoDiv.setAttribute('data-rot', datos.rot || 0);
+        grupoDiv.style.transform = `rotate(${datos.rot||0}deg) scale(1.15)`;
+        // Contenido de niños y niñas
+        const rotacionWrapper = document.createElement('div');
+        rotacionWrapper.className = 'rotacion-wrapper';
+        let content = '';
+        for (let i = 0; i < (datos.ninas||0); i++) content += `<img src="../imagenes/Niña.png" alt="Niña" class="mini-nino">`;
+        for (let i = 0; i < (datos.ninos||0); i++) content += `<img src="../imagenes/Niño.png" alt="Niño" class="mini-nino">`;
+        rotacionWrapper.innerHTML = content;
+        grupoDiv.appendChild(rotacionWrapper);
+        // Insertar en el mapa y habilitar drag
+        document.getElementById('ciudad').appendChild(grupoDiv);
+        enableNombreDrag(grupoDiv);
+      }
+    });
+    // Solo actualizar la vista, NO reiniciar los contadores
     actualizarContadores();
   });
   
@@ -655,7 +784,7 @@ function volver() {
   // Aplica el nuevo drag & drop a todos los nombres flotantes
   setTimeout(() => {
     document.querySelectorAll('.nombre-flotante').forEach(enableNombreDrag);
-    actualizarContadores();
+    actualizarContadores(); // <-- Aquí se asegura que los contadores se dibujen correctamente tras inicializar los nombres
     // Inicializa estado visible
     const cont = document.getElementById('contador-global');
     if(cont) cont.classList.add('contador-visible');
@@ -684,11 +813,12 @@ function volver() {
     // Si existen contadores temporales (por drops del menú), úsalos
     if (window._contadoresEdificio) {
       document.querySelectorAll('.nombre-flotante:not(.grupo-en-mapa)').forEach(edificio => {
-        const idEdificio = edificio.id || edificio.getAttribute('data-id') || edificio.src || edificio;
-        const datos = window._contadoresEdificio[idEdificio] || {ninas:0, ninos:0};
-        totalNinas += datos.ninas;
-        totalNinos += datos.ninos;
-        // Crea y posiciona contador visual
+      const idEdificio = edificio.id || edificio.getAttribute('data-id') || edificio.src || edificio;
+      const datos = window._contadoresEdificio[idEdificio] || {ninas:0, ninos:0};
+      totalNinas += datos.ninas;
+      totalNinos += datos.ninos;
+      // Crea y posiciona contador visual
+
         if (datos.ninas > 0 || datos.ninos > 0) {
           const contador = document.createElement('div');
           contador.className = 'contador-edificio';
@@ -731,6 +861,7 @@ function volver() {
                 if(window._contadoresEdificio && window._contadoresEdificio[idEdificio] && window._contadoresEdificio[idEdificio].ninas > 0) {
                   window._contadoresEdificio[idEdificio].ninas--;
                   actualizarContadores();
+                  guardarContadores();
                 }
               };
               contador.querySelector('.nina-cnt').insertAdjacentElement('afterend', btnNina);
@@ -752,6 +883,7 @@ function volver() {
                 if(window._contadoresEdificio && window._contadoresEdificio[idEdificio] && window._contadoresEdificio[idEdificio].ninos > 0) {
                   window._contadoresEdificio[idEdificio].ninos--;
                   actualizarContadores();
+                  guardarContadores();
                 }
               };
               contador.querySelector('.nino-cnt').insertAdjacentElement('afterend', btnNino);
@@ -816,4 +948,4 @@ function volver() {
     document.addEventListener(ev, ()=>setTimeout(actualizarContadores, 50));
   });
 
-  window.addEventListener('DOMContentLoaded', ()=>setTimeout(actualizarContadores,200));
+  
