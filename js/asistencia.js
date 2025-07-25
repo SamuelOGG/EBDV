@@ -465,8 +465,8 @@ lockBtn.addEventListener('click', () => {
     rotacionWrapper.className = 'rotacion-wrapper';
 
     let content = '';
-    for (let i = 0; i < ninas; i++) content += `<img src="../imagenes/Niña.png" alt="Niña" class="mini-nino">`;
-    for (let i = 0; i < ninos; i++) content += `<img src="../imagenes/Niño.png" alt="Niño" class="mini-nino">`;
+    for (let i = 0; i < ninas; i++) content += `<img src=\"imagenes/Niña.png\" alt=\"Niña\" class=\"mini-nino\">`;
+    for (let i = 0; i < ninos; i++) content += `<img src=\"imagenes/Niño.png\" alt=\"Niño\" class=\"mini-nino\">`;
     rotacionWrapper.innerHTML = content;
     grupoDraggable.appendChild(rotacionWrapper);
 
@@ -720,8 +720,8 @@ lockBtn.addEventListener('click', () => {
         const rotacionWrapper = document.createElement('div');
         rotacionWrapper.className = 'rotacion-wrapper';
         let content = '';
-        for (let i = 0; i < (datos.ninas||0); i++) content += `<img src="../imagenes/Niña.png" alt="Niña" class="mini-nino">`;
-        for (let i = 0; i < (datos.ninos||0); i++) content += `<img src="../imagenes/Niño.png" alt="Niño" class="mini-nino">`;
+        for (let i = 0; i < (datos.ninas||0); i++) content += `<img src=\"imagenes/Niña.png\" alt=\"Niña\" class=\"mini-nino\">`;
+        for (let i = 0; i < (datos.ninos||0); i++) content += `<img src=\"imagenes/Niño.png\" alt=\"Niño\" class=\"mini-nino\">`;
         rotacionWrapper.innerHTML = content;
         grupoDiv.appendChild(rotacionWrapper);
         // Insertar en el mapa y habilitar drag
