@@ -71,7 +71,7 @@ function volver() {
   }
   
   // === Variables globales ===
-  const sumandoSound = new Audio('../sonidos/sumando.mp3');
+  const sumandoSound = new Audio('sonidos/sumando.mp3');
 
   // === Lógica de persistencia de contadores ===
   const CONTADORES_STORAGE_KEY = 'contadoresEdificioEBDV';
@@ -190,7 +190,7 @@ function volver() {
   
   nombres.forEach(nombre => {
     const img = document.createElement("img");
-    img.src = `../imagenes/nombres/${nombre}.png`;
+    img.src = `imagenes/nombres/${nombre}.png`;
     img.className = "nombre-flotante";
     img.draggable = true;
     img.id = `nombre-${nombre}`;
