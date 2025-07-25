@@ -297,19 +297,74 @@ lockBtn.addEventListener('click', () => {
   // --- Botón de reinicio de contadores ---
   const resetCountersBtn = document.getElementById('reset-counters-btn');
   if (resetCountersBtn) {
-    resetCountersBtn.addEventListener('click', () => {
-      // Reproducir sonido de clic si existe función
-      if (typeof reproducirSonido === 'function') reproducirSonido('sonido-click');
-      // Limpiar objeto global y localStorage
-      window._contadoresEdificio = {};
-      localStorage.removeItem('contadoresEdificioEBDV');
-      // Eliminar todos los grupos del mapa y sus posiciones guardadas
-      document.querySelectorAll('.grupo-en-mapa').forEach(grupo => {
-        const id = grupo.getAttribute('data-id');
-        if (id) localStorage.removeItem('pos-' + id);
-        grupo.remove();
-      });
-      actualizarContadores();
+    resetCountersBtn.addEventListener('click', function () {
+      // Mensaje de confirmación personalizado
+      const fondo = document.createElement('div');
+      fondo.style.position = 'fixed';
+      fondo.style.top = '0';
+      fondo.style.left = '0';
+      fondo.style.width = '100vw';
+      fondo.style.height = '100vh';
+      fondo.style.background = 'rgba(0,0,0,0.4)';
+      fondo.style.zIndex = '99999';
+      fondo.id = 'modal-reset-confirm';
+
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '50%';
+      modal.style.left = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      modal.style.background = '#222';
+      modal.style.color = '#ffe066';
+      modal.style.border = '2px solid #ffe066';
+      modal.style.borderRadius = '12px';
+      modal.style.padding = '26px 30px 20px 30px';
+      modal.style.fontFamily = "'Press Start 2P', cursive";
+      modal.style.textAlign = 'center';
+      modal.style.boxShadow = '0 4px 18px #000a';
+      modal.innerHTML = `<div style='font-size:17px;margin-bottom:18px;'>⚠️ Se restablecerá todo el mapa.<br>¿Deseas continuar?</div>`;
+
+      const aceptar = document.createElement('button');
+      aceptar.textContent = 'Aceptar';
+      aceptar.style.margin = '0 12px 0 0';
+      aceptar.style.padding = '7px 22px';
+      aceptar.style.background = '#ffe066';
+      aceptar.style.color = '#222';
+      aceptar.style.border = 'none';
+      aceptar.style.borderRadius = '7px';
+      aceptar.style.fontWeight = 'bold';
+      aceptar.style.fontSize = '15px';
+      aceptar.style.cursor = 'pointer';
+      aceptar.onclick = function() {
+        document.body.removeChild(fondo);
+        if (typeof reproducirSonido === 'function') reproducirSonido('sonido-click');
+        window._contadoresEdificio = {};
+        localStorage.removeItem('contadoresEdificioEBDV');
+        document.querySelectorAll('.grupo-en-mapa').forEach(grupo => {
+          const id = grupo.getAttribute('data-id');
+          if (id) localStorage.removeItem('pos-' + id);
+          grupo.remove();
+        });
+        actualizarContadores();
+      };
+      const cancelar = document.createElement('button');
+      cancelar.textContent = 'Cancelar';
+      cancelar.style.margin = '0 0 0 12px';
+      cancelar.style.padding = '7px 22px';
+      cancelar.style.background = '#444';
+      cancelar.style.color = '#ffe066';
+      cancelar.style.border = '1px solid #ffe066';
+      cancelar.style.borderRadius = '7px';
+      cancelar.style.fontWeight = 'bold';
+      cancelar.style.fontSize = '15px';
+      cancelar.style.cursor = 'pointer';
+      cancelar.onclick = function() {
+        document.body.removeChild(fondo);
+      };
+      modal.appendChild(aceptar);
+      modal.appendChild(cancelar);
+      fondo.appendChild(modal);
+      document.body.appendChild(fondo);
     });
   }
 

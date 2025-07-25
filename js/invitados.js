@@ -144,8 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Botón para limpiar todos los emojis de todas las publicaciones
   const refreshBtn = document.getElementById('refresh-emojis');
-  if (refreshBtn) {
+  const confirmModal = document.getElementById('confirm-remove-emojis-modal');
+  const confirmAccept = document.getElementById('confirm-remove-emojis-accept');
+  const confirmCancel = document.getElementById('confirm-remove-emojis-cancel');
+
+  if (refreshBtn && confirmModal && confirmAccept && confirmCancel) {
     refreshBtn.addEventListener('click', () => {
+      confirmModal.classList.add('visible');
+    });
+
+    confirmAccept.addEventListener('click', () => {
       document.querySelectorAll('.dropzone').forEach(zone => {
         // Remover visualmente
         const row = zone.querySelector('.dropped-options-row');
@@ -155,6 +163,18 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem(id);
         updatePostCounter(zone);
       });
+      confirmModal.classList.remove('visible');
+    });
+
+    confirmCancel.addEventListener('click', () => {
+      confirmModal.classList.remove('visible');
+    });
+
+    // Cerrar modal si se hace click fuera del contenido
+    confirmModal.addEventListener('click', (e) => {
+      if (e.target === confirmModal) {
+        confirmModal.classList.remove('visible');
+      }
     });
   }
 
