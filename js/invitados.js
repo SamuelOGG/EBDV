@@ -212,8 +212,15 @@ document.addEventListener('DOMContentLoaded', () => {
         maxScore = currentScore;
         // Selector corregido para obtener el nombre del usuario (equipo)
         const title = wrapper.querySelector('.user-name').textContent.trim();
-        // Busca un nombre de imagen personalizado en el data-attribute; si no existe, usa el título.
-        const imageName = wrapper.dataset.imageName || title;
+        // Busca un nombre de imagen personalizado en el data-attribute; si no existe, usa el título procesado.
+        let imageName = wrapper.dataset.imageName;
+        if (!imageName) {
+          // Normaliza: quita acentos, pasa a minúsculas, quita espacios y caracteres especiales
+          imageName = title
+            .normalize('NFD').replace(/[00-6f]/g, '') // quita acentos
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, ''); // solo letras y números
+        }
 
         winnerTeam = {
           name: title,
