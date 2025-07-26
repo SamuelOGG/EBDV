@@ -215,7 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Busca un nombre de imagen personalizado en el data-attribute; si no existe, usa el título.
         let imageName = wrapper.dataset.imageName || title;
         // Forzar minúsculas para la ruta de imagen (los archivos están en minúsculas)
-        imageName = imageName.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/ñ/g, "n").replace(/Ñ/g, "n").toLowerCase();
+        imageName = imageName
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "") // quita tildes
+  .replace(/ñ/gi, "n")              // reemplaza ñ y Ñ por n
+  .toLowerCase();
         winnerTeam = {
           name: title,
           score: currentScore,
