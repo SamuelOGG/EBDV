@@ -212,16 +212,10 @@ document.addEventListener('DOMContentLoaded', () => {
         maxScore = currentScore;
         // Selector corregido para obtener el nombre del usuario (equipo)
         const title = wrapper.querySelector('.user-name').textContent.trim();
-        // Busca un nombre de imagen personalizado en el data-attribute; si no existe, usa el título procesado.
-        let imageName = wrapper.dataset.imageName;
-        if (!imageName) {
-          // Normaliza: quita acentos, pasa a minúsculas, quita espacios y caracteres especiales
-          imageName = title
-            .normalize('NFD').replace(/[00-6f]/g, '') // quita acentos
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, ''); // solo letras y números
-        }
-
+        // Busca un nombre de imagen personalizado en el data-attribute; si no existe, usa el título.
+        let imageName = wrapper.dataset.imageName || title;
+        // Forzar minúsculas para la ruta de imagen (los archivos están en minúsculas)
+        imageName = imageName.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/ñ/g, "n").replace(/Ñ/g, "n").toLowerCase();
         winnerTeam = {
           name: title,
           score: currentScore,
